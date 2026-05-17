@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Broken Earth — Digital Poetry</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Cinzel:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --ink: #e8e0d0;
+  --bg: #0a0a0a;
+  --faint: #3a3530;
+  --muted: #5a5248;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.5;
+}
+
+/* ========== LANDING PAGE ========== */
+#landing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 4rem 2rem;
+  text-align: center;
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+#landing.hidden {
+  opacity: 0;
+  transform: translateY(-30px);
+  pointer-events: none;
+}
+
+.landing-eyebrow {
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 1.5rem;
+}
+
+.landing-title {
+  font-family: 'Cinzel', serif;
+  font-size: clamp(38px, 7vw, 72px);
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  color: #e8e0d0;
+  line-height: 1.1;
+  margin-bottom: 1.2rem;
+}
+
+.landing-rule {
+  width: 1px;
+  height: 50px;
+  background: var(--faint);
+  margin: 2rem auto;
+}
+
+.landing-credit {
+  margin-top: 1rem;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  color: rgba(232, 224, 208, 0.38);
+  line-height: 1.7;
+  font-style: italic;
+  text-align: center;
+  user-select: none;
+}
+
+.landing-sub {
+  font-size: clamp(14px, 1.8vw, 17px);
+  font-style: italic;
+  color: var(--muted);
+  margin-bottom: 4rem;
+  letter-spacing: 0.05em;
+}
+
+.poem-links {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.poem-link {
+  font-family: 'Cinzel', serif;
+  font-size: clamp(14px, 2vw, 18px);
+  font-weight: 400;
+  letter-spacing: 0.15em;
+  color: #c8c0b0;
+  text-decoration: none;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  position: relative;
+  transition: color 0.3s;
+}
+
+.poem-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0.5px;
+  background: #c8c0b0;
+  transition: width 0.4s ease;
+}
+
+.poem-link:hover { color: #f0e8d8; }
+.poem-link:hover::after { width: 80%; }
+
+.poem-link[data-poem="forest"]  { color: #7EB87A; }
+.poem-link[data-poem="forest"]::after  { background: #7EB87A; }
+.poem-link[data-poem="forest"]:hover   { color: #9ED89A; }
+
+.poem-link[data-poem="rain"]    { color: #7AAFD6; }
+.poem-link[data-poem="rain"]::after    { background: #7AAFD6; }
+.poem-link[data-poem="rain"]:hover     { color: #9AC8E8; }
+
+.poem-link[data-poem="tide"]    { color: #C8A86A; }
+.poem-link[data-poem="tide"]::after    { background: #C8A86A; }
+.poem-link[data-poem="tide"]:hover     { color: #E0C080; }
+
+/* ========== POEM PAGE ========== */
+#poem-view {
+  display: none;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+#poem-view.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.poem-page {
+  display: none;
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 4rem 2.5rem 8rem;
+}
+
+.poem-page.active { display: block; }
+
+.back-btn {
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 4rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: color 0.3s;
+}
+
+.back-btn:hover { color: var(--ink); }
+
+.back-btn::before {
+  content: '←';
+  font-style: normal;
+  font-size: 14px;
+}
+
+.poem-header {
+  text-align: center;
+  margin-bottom: 4rem;
+}
+
+.poem-header-rule {
+  width: 1px;
+  height: 50px;
+  background: var(--faint);
+  margin: 0 auto 2rem;
+}
+
+.poem-header h1 {
+  font-family: 'Cinzel', serif;
+  font-size: clamp(22px, 3.5vw, 34px);
+  font-weight: 400;
+  letter-spacing: 0.15em;
+  color: #e8e0d0;
+  margin-bottom: 0.6rem;
+}
+
+.poem-header p {
+  font-size: 12px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-family: 'Cinzel', serif;
+}
+
+.stanza { margin-bottom: 3.5rem; }
+
+.poem-line {
+  font-size: clamp(18px, 2.6vw, 24px);
+  font-style: italic;
+  font-weight: 300;
+  color: #d8d0c0;
+  line-height: 1.5;
+  margin-bottom: 1.2rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+  opacity: 0;
+  transform: translateY(10px);
+  animation: line-in 0.6s ease forwards;
+}
+
+@keyframes line-in { to { opacity: 1; transform: translateY(0); } }
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin: 3.5rem 0;
+}
+.divider::before, .divider::after {
+  content: ''; flex: 1; height: 0.5px; background: var(--faint);
+}
+.divider-symbol {
+  font-family: 'Cinzel', serif;
+  color: #4a4540;
+  font-size: 13px;
+}
+
+footer-poem {
+  display: block;
+  text-align: center;
+  margin-top: 5rem;
+  padding-top: 2rem;
+  border-top: 0.5px solid #2a2520;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #3a3530;
+  font-family: 'Cinzel', serif;
+}
+
+/* ---- Noun images ---- */
+.noun {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  cursor: default;
+  vertical-align: middle;
+}
+.noun svg { display: block; overflow: visible; }
+.noun-label {
+  position: absolute;
+  bottom: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-family: 'Cinzel', serif;
+  font-style: normal;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+.noun:hover .noun-label { opacity: 1; }
+
+/* ---- Animations ---- */
+@keyframes sway        { 0%,100%{transform:rotate(-5deg)}50%{transform:rotate(5deg)} }
+@keyframes sway-gentle { 0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)} }
+@keyframes float-up    { 0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)} }
+@keyframes drip        { 0%,65%,100%{transform:translateY(0) scaleY(1)}38%{transform:translateY(7px) scaleY(0.8)} }
+@keyframes drip-heavy  { 0%,60%,100%{transform:translateY(0) scaleY(1)}35%{transform:translateY(10px) scaleY(0.72)} }
+@keyframes drift       { 0%,100%{transform:translateX(0)}33%{transform:translateX(8px)}66%{transform:translateX(-6px)} }
+@keyframes spin-slow   { 0%{transform:rotate(0deg)}100%{transform:rotate(360deg)} }
+@keyframes pulse-s     { 0%,100%{transform:scale(1)}50%{transform:scale(1.15)} }
+@keyframes bob         { 0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-6px) rotate(2deg)} }
+@keyframes wave-r      { 0%,100%{transform:scaleX(1) translateX(0)}50%{transform:scaleX(1.07) translateX(3px)} }
+@keyframes flicker     { 0%,85%,100%{opacity:1}42%{opacity:0.28} }
+@keyframes smoke-rise  { 0%,100%{transform:translateY(0) scaleX(1)}50%{transform:translateY(-7px) scaleX(0.8)} }
+@keyframes tremble     { 0%,100%{transform:rotate(0) translate(0,0)}20%{transform:rotate(-4deg) translate(-2px,1px)}50%{transform:rotate(4deg) translate(2px,-1px)}75%{transform:rotate(-3deg) translate(1px,2px)} }
+@keyframes grief-drop  { 0%,70%,100%{transform:translateY(0) scaleY(1);opacity:0.85}40%{transform:translateY(11px) scaleY(0.68);opacity:0.5} }
+@keyframes undulate    { 0%,100%{transform:translateY(0) scaleX(1)}50%{transform:translateY(-4px) scaleX(1.05)} }
+@keyframes shimmer     { 0%,100%{opacity:1}50%{opacity:0.55} }
+@keyframes spin-ccw    { 0%{transform:rotate(0deg)}100%{transform:rotate(-360deg)} }
+
+.a-sway    { animation: sway 3.2s ease-in-out infinite; transform-origin: bottom center; }
+.a-sway-g  { animation: sway-gentle 4s ease-in-out infinite; transform-origin: bottom center; }
+.a-float   { animation: float-up 2.8s ease-in-out infinite; }
+.a-drip    { animation: drip 1.9s ease-in-out infinite; }
+.a-drip-h  { animation: drip-heavy 1.6s ease-in-out infinite; }
+.a-drift   { animation: drift 3.8s ease-in-out infinite; }
+.a-spin    { animation: spin-slow 7s linear infinite; transform-origin: center center; }
+.a-spin-ccw{ animation: spin-ccw 9s linear infinite; transform-origin: center center; }
+.a-pulse   { animation: pulse-s 2.2s ease-in-out infinite; }
+.a-bob     { animation: bob 3s ease-in-out infinite; }
+.a-wave    { animation: wave-r 2.6s ease-in-out infinite; }
+.a-flicker { animation: flicker 2.1s ease-in-out infinite; }
+.a-smoke   { animation: smoke-rise 2.7s ease-in-out infinite; }
+.a-tremble { animation: tremble 0.55s ease-in-out infinite; }
+.a-grief   { animation: grief-drop 1.7s ease-in-out infinite; }
+.a-undulate{ animation: undulate 3s ease-in-out infinite; }
+.a-shimmer { animation: shimmer 2.5s ease-in-out infinite; }
+
+@media (max-width: 600px) {
+  .poem-page { padding: 3rem 1.2rem 6rem; }
+  .poem-line { gap: 6px; font-size: 17px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ========== LANDING ========== -->
+<div id="landing">
+  <p class="landing-eyebrow">A collection of digital poetry</p>
+  <h1 class="landing-title">Broken<br>Earth</h1>
+  <p class="landing-credit">
+  poetry by Siti Nur Nazilatul Zulfa<br>
+  website by Yogi Ramadhani
+</p>
+  <div class="landing-rule"></div>
+  <p class="landing-sub">Three elegies for a world unraveling</p>
+  <nav class="poem-links">
+    <button class="poem-link" data-poem="forest">Breath of the Forests</button>
+    <button class="poem-link" data-poem="rain">Whisper of Rain</button>
+    <button class="poem-link" data-poem="tide">Fading Tide</button>
+  </nav>
+</div>
+
+<!-- ========== POEM VIEW ========== -->
+<div id="poem-view">
+
+  <!-- POEM 1: Breath of the Forests -->
+  <div class="poem-page" id="poem-forest">
+    <button class="back-btn" onclick="goBack()">Back</button>
+    <div class="poem-header">
+      <div class="poem-header-rule"></div>
+      <h1>Breath of the Forests</h1>
+      <p>Broken Earth · I</p>
+    </div>
+
+    <div class="stanza">
+      <div class="poem-line">Some creatures once lived here,</div>
+      <div class="poem-line">
+        speaking softly through
+        <span class="noun a-sway" title="roots"><svg width="52" height="58" viewBox="0 0 52 58"><path d="M26 5 C26 5 26 24 26 30" stroke="#6B4C2A" stroke-width="2.8" fill="none" stroke-linecap="round"/><path d="M26 17 C19 22 13 28 10 38" stroke="#8B6840" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M26 17 C33 22 39 28 42 38" stroke="#8B6840" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M26 23 C20 28 14 33 11 44" stroke="#A8845A" stroke-width="1.6" fill="none" stroke-linecap="round"/><path d="M26 23 C32 28 38 33 41 44" stroke="#A8845A" stroke-width="1.6" fill="none" stroke-linecap="round"/><path d="M17 32 C13 37 9 40 7 50" stroke="#C09E72" stroke-width="1.2" fill="none" stroke-linecap="round"/><path d="M35 32 C39 37 43 40 45 50" stroke="#C09E72" stroke-width="1.2" fill="none" stroke-linecap="round"/><ellipse cx="26" cy="5" rx="5" ry="3.5" fill="#6A9E40" opacity="0.75"/></svg><span class="noun-label">roots</span></span>
+        and
+        <span class="noun a-drip" title="rain"><svg width="50" height="56" viewBox="0 0 50 56"><ellipse cx="13" cy="10" rx="2.2" ry="5.5" fill="#5BAFD6" opacity="0.85"/><ellipse cx="25" cy="4" rx="2.2" ry="5.5" fill="#4A9BC2" opacity="0.95"/><ellipse cx="37" cy="12" rx="2.2" ry="5.5" fill="#5BAFD6" opacity="0.75"/><ellipse cx="8" cy="26" rx="2.2" ry="5.5" fill="#3A8AB2" opacity="0.85"/><ellipse cx="20" cy="20" rx="2.2" ry="5.5" fill="#5BAFD6" opacity="0.9"/><ellipse cx="32" cy="24" rx="2.2" ry="5.5" fill="#4A9BC2" opacity="0.75"/><ellipse cx="42" cy="32" rx="2.2" ry="5.5" fill="#3A8AB2" opacity="0.85"/><ellipse cx="16" cy="40" rx="2.2" ry="5.5" fill="#5BAFD6" opacity="0.7"/><ellipse cx="30" cy="42" rx="2.2" ry="5.5" fill="#4A9BC2" opacity="0.8"/></svg><span class="noun-label">rain</span></span>,
+      </div>
+      <div class="poem-line">
+        where wild
+        <span class="noun a-sway" title="trees"><svg width="58" height="68" viewBox="0 0 58 68"><rect x="24" y="42" width="10" height="24" rx="2" fill="#7B5230"/><ellipse cx="29" cy="26" rx="20" ry="18" fill="#3E7828"/><ellipse cx="21" cy="32" rx="12" ry="10" fill="#4E9238"/><ellipse cx="37" cy="32" rx="12" ry="10" fill="#4E9238"/><ellipse cx="29" cy="14" rx="12" ry="10" fill="#5AAA40"/><ellipse cx="29" cy="12" rx="5" ry="4" fill="#80D460" opacity="0.5"/></svg><span class="noun-label">trees</span></span>
+        swayed with the
+        <span class="noun a-drift" title="wind"><svg width="62" height="46" viewBox="0 0 62 46"><path d="M4 16 Q22 8 38 16 Q46 20 52 14 Q56 10 54 6" stroke="#A8C0CC" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M2 26 Q20 18 36 26 Q46 30 54 22" stroke="#BCCEDD" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M6 36 Q24 28 40 36 Q50 40 58 34" stroke="#D0DEE8" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg><span class="noun-label">wind</span></span>
+      </div>
+      <div class="poem-line">
+        and
+        <span class="noun a-wave" title="rivers"><svg width="72" height="40" viewBox="0 0 72 40"><path d="M4 20 Q14 10 24 20 Q34 30 44 20 Q54 10 62 20 Q66 26 70 20" stroke="#2A8BAA" stroke-width="3.5" fill="none" stroke-linecap="round"/><path d="M2 28 Q12 18 22 28 Q32 38 42 28 Q52 18 62 28 Q66 32 70 28" stroke="#4AAFC8" stroke-width="2.2" fill="none" stroke-linecap="round" opacity="0.6"/><path d="M6 12 Q16 4 26 12 Q36 20 46 12 Q54 6 62 12" stroke="#80CCE0" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.45"/></svg><span class="noun-label">rivers</span></span>
+        carried the
+        <span class="noun a-float" title="sky"><svg width="66" height="50" viewBox="0 0 66 50"><ellipse cx="33" cy="30" rx="26" ry="14" fill="#B4D6EE" opacity="0.7"/><ellipse cx="24" cy="28" rx="16" ry="12" fill="#C8E4F6" opacity="0.88"/><ellipse cx="42" cy="26" rx="14" ry="10" fill="#D4ECFA" opacity="0.88"/><ellipse cx="33" cy="22" rx="13" ry="10" fill="#E8F5FC"/><ellipse cx="28" cy="18" rx="8" ry="7" fill="#F2FAFF"/></svg><span class="noun-label">sky</span></span>
+        within their gentle
+        <span class="noun a-wave" title="currents"><svg width="62" height="34" viewBox="0 0 62 34"><path d="M4 17 Q14 6 24 17 Q34 28 44 17 Q54 6 60 17" stroke="#1D9E75" stroke-width="3.5" fill="none" stroke-linecap="round"/><path d="M2 24 Q12 14 22 24 Q32 34 42 24 Q52 14 60 24" stroke="#2EBF8A" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.55"/><circle cx="10" cy="10" r="2.2" fill="#60D4AA" opacity="0.5"/></svg><span class="noun-label">currents</span></span>,
+      </div>
+      <div class="poem-line">
+        while the
+        <span class="noun a-pulse" title="earth"><svg width="56" height="56" viewBox="0 0 56 56"><circle cx="28" cy="28" r="22" fill="#2A6AB8"/><ellipse cx="20" cy="20" rx="10" ry="8" fill="#3A8E30" transform="rotate(-22 20 20)"/><ellipse cx="34" cy="30" rx="12" ry="9" fill="#4AA840" transform="rotate(14 34 30)"/><ellipse cx="15" cy="33" rx="6" ry="5" fill="#3A8E30" transform="rotate(-28 15 33)"/><ellipse cx="38" cy="18" rx="5" ry="4" fill="#4AA840"/><circle cx="28" cy="28" r="22" fill="none" stroke="#1A52A0" stroke-width="1.5"/></svg><span class="noun-label">earth</span></span>
+        breathed quietly beneath endless
+        <span class="noun a-bob" title="fields"><svg width="68" height="50" viewBox="0 0 68 50"><rect x="2" y="32" width="64" height="16" rx="3" fill="#8BC34A" opacity="0.3"/><line x1="8" y1="32" x2="4" y2="14" stroke="#5A8830" stroke-width="2.2" stroke-linecap="round"/><line x1="16" y1="32" x2="16" y2="10" stroke="#6EA038" stroke-width="2.2" stroke-linecap="round"/><line x1="24" y1="32" x2="22" y2="12" stroke="#5A8830" stroke-width="2.2" stroke-linecap="round"/><line x1="32" y1="32" x2="32" y2="8" stroke="#6EA038" stroke-width="2.5" stroke-linecap="round"/><line x1="40" y1="32" x2="38" y2="12" stroke="#5A8830" stroke-width="2.2" stroke-linecap="round"/><line x1="48" y1="32" x2="48" y2="10" stroke="#6EA038" stroke-width="2.2" stroke-linecap="round"/><ellipse cx="4" cy="13" rx="3.5" ry="2.5" fill="#9ACA55"/><ellipse cx="16" cy="9" rx="3.5" ry="2.5" fill="#AADD60"/><ellipse cx="22" cy="11" rx="3.5" ry="2.5" fill="#9ACA55"/><ellipse cx="32" cy="7" rx="4.5" ry="3" fill="#AADD60"/><ellipse cx="38" cy="11" rx="3.5" ry="2.5" fill="#9ACA55"/><ellipse cx="48" cy="9" rx="3.5" ry="2.5" fill="#AADD60"/></svg><span class="noun-label">fields</span></span>
+        of
+        <span class="noun a-float" title="life"><svg width="46" height="54" viewBox="0 0 46 54"><path d="M23 50 C23 50 23 28 23 20" stroke="#5C3D1E" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M23 34 C16 26 7 26 3 30 C7 40 16 40 23 34" fill="#4E9A38"/><path d="M23 27 C30 19 39 19 43 23 C39 33 30 33 23 27" fill="#5EAA45"/><path d="M23 20 C18 10 20 4 23 2 C26 4 28 10 23 20" fill="#70BE54"/><ellipse cx="23" cy="2" rx="3.5" ry="2.5" fill="#FFD040" opacity="0.85"/></svg><span class="noun-label">life</span></span>.
+      </div>
+    </div>
+
+    <div class="divider"><span class="divider-symbol">✦</span></div>
+
+    <div class="stanza">
+      <div class="poem-line">
+        Then came the endless neat
+        <span class="noun a-bob" title="rows"><svg width="68" height="42" viewBox="0 0 68 42"><line x1="6" y1="32" x2="6" y2="12" stroke="#907040" stroke-width="2.2" stroke-linecap="round"/><line x1="18" y1="32" x2="18" y2="10" stroke="#907040" stroke-width="2.2" stroke-linecap="round"/><line x1="30" y1="32" x2="30" y2="12" stroke="#907040" stroke-width="2.2" stroke-linecap="round"/><line x1="42" y1="32" x2="42" y2="10" stroke="#907040" stroke-width="2.2" stroke-linecap="round"/><line x1="54" y1="32" x2="54" y2="12" stroke="#907040" stroke-width="2.2" stroke-linecap="round"/><ellipse cx="6" cy="11" rx="4.5" ry="3" fill="#C8A448"/><ellipse cx="18" cy="9" rx="4.5" ry="3" fill="#D4B454"/><ellipse cx="30" cy="11" rx="4.5" ry="3" fill="#C8A448"/><ellipse cx="42" cy="9" rx="4.5" ry="3" fill="#D4B454"/><ellipse cx="54" cy="11" rx="4.5" ry="3" fill="#C8A448"/><line x1="2" y1="32" x2="60" y2="32" stroke="#6A4E22" stroke-width="2" stroke-linecap="round"/></svg><span class="noun-label">rows</span></span>
+        beneath a burning
+        <span class="noun a-spin" title="sun"><svg width="58" height="58" viewBox="0 0 58 58"><circle cx="29" cy="29" r="12" fill="#E8941A"/><circle cx="29" cy="29" r="8.5" fill="#FFD060"/><line x1="29" y1="4" x2="29" y2="13" stroke="#E8941A" stroke-width="3" stroke-linecap="round"/><line x1="29" y1="45" x2="29" y2="54" stroke="#E8941A" stroke-width="3" stroke-linecap="round"/><line x1="4" y1="29" x2="13" y2="29" stroke="#E8941A" stroke-width="3" stroke-linecap="round"/><line x1="45" y1="29" x2="54" y2="29" stroke="#E8941A" stroke-width="3" stroke-linecap="round"/><line x1="10" y1="10" x2="17" y2="17" stroke="#E8941A" stroke-width="2.5" stroke-linecap="round"/><line x1="41" y1="41" x2="48" y2="48" stroke="#E8941A" stroke-width="2.5" stroke-linecap="round"/><line x1="48" y1="10" x2="41" y2="17" stroke="#E8941A" stroke-width="2.5" stroke-linecap="round"/><line x1="17" y1="41" x2="10" y2="48" stroke="#E8941A" stroke-width="2.5" stroke-linecap="round"/></svg><span class="noun-label">sun</span></span>,
+      </div>
+      <div class="poem-line">
+        replacing
+        <span class="noun a-sway-g" title="forests"><svg width="78" height="68" viewBox="0 0 78 68"><rect x="16" y="48" width="6" height="18" fill="#7B5230" rx="1.5"/><rect x="36" y="46" width="7" height="20" fill="#6B4828" rx="1.5"/><rect x="57" y="48" width="6" height="18" fill="#7B5230" rx="1.5"/><polygon points="19,48 7,26 31,26" fill="#2E6A20"/><polygon points="19,36 4,14 34,14" fill="#3A8228"/><polygon points="19,24 6,6 32,6" fill="#48922E"/><polygon points="39,46 25,22 53,22" fill="#2E6A20"/><polygon points="39,32 22,8 56,8" fill="#3A8228"/><polygon points="39,20 26,4 52,4" fill="#48922E"/><polygon points="60,48 48,26 72,26" fill="#2E6A20"/><polygon points="60,36 45,14 75,14" fill="#3A8228"/></svg><span class="noun-label">forests</span></span>
+        with
+        <span class="noun a-flicker" title="ashes"><svg width="54" height="52" viewBox="0 0 54 52"><ellipse cx="27" cy="44" rx="20" ry="6" fill="#ACA49A" opacity="0.4"/><ellipse cx="27" cy="40" rx="14" ry="5" fill="#988E84" opacity="0.38"/><path d="M14 40 C12 30 17 22 14 12 C17 15 19 10 20 5 C22 10 22 15 24 10 C24 17 26 22 24 30 C26 25 28 20 30 16 C28 24 33 28 30 33 C33 27 38 23 40 20 C38 27 37 34 37 40" fill="#8A827A" opacity="0.42"/><ellipse cx="19" cy="20" rx="5" ry="3.5" fill="#C0B8AE" opacity="0.5" transform="rotate(-22 19 20)"/><ellipse cx="33" cy="26" rx="5" ry="3" fill="#B8B0A6" opacity="0.5" transform="rotate(18 33 26)"/></svg><span class="noun-label">ashes</span></span>
+        and
+        <span class="noun a-smoke" title="smoke"><svg width="52" height="60" viewBox="0 0 52 60"><ellipse cx="26" cy="54" rx="12" ry="5" fill="#888880" opacity="0.38"/><path d="M26 54 C24 44 18 38 21 28 C23 20 28 18 26 9 C24 4 22 2 24 0" stroke="#9A9A92" stroke-width="7" fill="none" stroke-linecap="round" opacity="0.22"/><path d="M33 52 C31 42 36 36 33 26 C31 18 26 16 28 7" stroke="#AAAAA2" stroke-width="5" fill="none" stroke-linecap="round" opacity="0.18"/><ellipse cx="24" cy="2" rx="6" ry="5" fill="#CACAC2" opacity="0.25"/><ellipse cx="30" cy="9" rx="5" ry="4" fill="#D0D0C8" opacity="0.2"/></svg><span class="noun-label">smoke</span></span>,
+      </div>
+      <div class="poem-line">
+        until the
+        <span class="noun a-wave" title="rivers"><svg width="72" height="40" viewBox="0 0 72 40"><path d="M4 20 Q14 10 24 20 Q34 30 44 20 Q54 10 62 20 Q66 26 70 20" stroke="#2A8BAA" stroke-width="3.5" fill="none" stroke-linecap="round"/><path d="M2 28 Q12 18 22 28 Q32 38 42 28 Q52 18 62 28 Q66 32 70 28" stroke="#4AAFC8" stroke-width="2.2" fill="none" stroke-linecap="round" opacity="0.6"/></svg><span class="noun-label">rivers</span></span>
+        forgot the shape of their own
+        <span class="noun a-drift" title="paths"><svg width="68" height="46" viewBox="0 0 68 46"><path d="M4 40 C12 32 10 26 18 22 C26 18 32 22 40 16 C48 10 54 6 64 8" stroke="#B8895A" stroke-width="3" fill="none" stroke-linecap="round" stroke-dasharray="5 4"/><circle cx="4" cy="40" r="3.5" fill="#D4A870"/><circle cx="64" cy="8" r="3.5" fill="#D4A870"/></svg><span class="noun-label">paths</span></span>,
+      </div>
+      <div class="poem-line">
+        and the
+        <span class="noun a-drip-h" title="rain"><svg width="50" height="58" viewBox="0 0 50 58"><ellipse cx="13" cy="10" rx="2.5" ry="6" fill="#3A6A90" opacity="0.85"/><ellipse cx="25" cy="3" rx="2.5" ry="6" fill="#2E5A80" opacity="0.95"/><ellipse cx="37" cy="12" rx="2.5" ry="6" fill="#3A6A90" opacity="0.75"/><ellipse cx="8" cy="26" rx="2.5" ry="6" fill="#264E70" opacity="0.85"/><ellipse cx="20" cy="20" rx="2.5" ry="6" fill="#2E5A80" opacity="0.9"/><ellipse cx="32" cy="24" rx="2.5" ry="6" fill="#264E70" opacity="0.75"/><ellipse cx="42" cy="34" rx="2.5" ry="6" fill="#1E4060" opacity="0.85"/><ellipse cx="16" cy="42" rx="2.5" ry="6" fill="#264E70" opacity="0.7"/><ellipse cx="30" cy="44" rx="2.5" ry="6" fill="#1E4060" opacity="0.8"/></svg><span class="noun-label">rain</span></span>
+        began to fall like
+        <span class="noun a-grief" title="grief"><svg width="48" height="56" viewBox="0 0 48 56"><path d="M24 7 C24 7 6 27 6 38 C6 47 14 54 24 54 C34 54 42 47 42 38 C42 27 24 7 24 7Z" fill="#6A5C7E" opacity="0.72"/><path d="M24 20 C24 20 13 33 13 39 C13 44 18 49 24 49" stroke="#C4B8D8" stroke-width="1.8" fill="none" stroke-linecap="round" opacity="0.4"/></svg><span class="noun-label">grief</span></span>
+        upon the
+        <span class="noun a-float" title="land"><svg width="68" height="42" viewBox="0 0 68 42"><ellipse cx="34" cy="32" rx="30" ry="9" fill="#7B5A2A" opacity="0.45"/><ellipse cx="34" cy="27" rx="27" ry="7" fill="#9A7040"/><path d="M8 27 Q16 18 22 22 Q28 16 34 20 Q40 14 48 18 Q54 14 60 20 Q62 24 60 27" fill="#5A8A2E" opacity="0.72"/></svg><span class="noun-label">land</span></span>,
+      </div>
+      <div class="poem-line">
+        heavy enough for the wounded
+        <span class="noun a-tremble" title="earth"><svg width="56" height="56" viewBox="0 0 56 56"><circle cx="28" cy="28" r="22" fill="#284E8E"/><ellipse cx="20" cy="20" rx="10" ry="8" fill="#547840" transform="rotate(-22 20 20)" opacity="0.8"/><ellipse cx="34" cy="30" rx="12" ry="9" fill="#668048" transform="rotate(14 34 30)" opacity="0.8"/><path d="M12 24 L16 20 L20 26 L24 16 L28 24 L32 14 L36 24 L40 20 L44 26" stroke="#CC4428" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.7"/><circle cx="28" cy="28" r="22" fill="none" stroke="#1A3870" stroke-width="1.5"/></svg><span class="noun-label">earth</span></span>
+        to no longer hold.
+      </div>
+    </div>
+    <footer-poem>hover each image to reveal its name</footer-poem>
+  </div>
+
+  <!-- POEM 2: Whisper of Rain -->
+  <div class="poem-page" id="poem-rain">
+    <button class="back-btn" onclick="goBack()">Back</button>
+    <div class="poem-header">
+      <div class="poem-header-rule"></div>
+      <h1>Whisper of Rain</h1>
+      <p>Broken Earth · II</p>
+    </div>
+    <div class="stanza">
+      <div class="poem-line">
+        The
+        <span class="noun a-drip" title="rain"><svg width="50" height="56" viewBox="0 0 50 56"><ellipse cx="13" cy="10" rx="2.2" ry="5.5" fill="#5BAFD6" opacity="0.85"/><ellipse cx="25" cy="4" rx="2.2" ry="5.5" fill="#4A9BC2" opacity="0.95"/><ellipse cx="37" cy="12" rx="2.2" ry="5.5" fill="#5BAFD6" opacity="0.75"/><ellipse cx="8" cy="26" rx="2.2" ry="5.5" fill="#3A8AB2" opacity="0.85"/><ellipse cx="20" cy="20" rx="2.2" ry="5.5" fill="#5BAFD6" opacity="0.9"/><ellipse cx="32" cy="24" rx="2.2" ry="5.5" fill="#4A9BC2" opacity="0.75"/><ellipse cx="42" cy="32" rx="2.2" ry="5.5" fill="#3A8AB2" opacity="0.85"/><ellipse cx="16" cy="40" rx="2.2" ry="5.5" fill="#5BAFD6" opacity="0.7"/><ellipse cx="30" cy="42" rx="2.2" ry="5.5" fill="#4A9BC2" opacity="0.8"/></svg><span class="noun-label">rain</span></span>
+        arrives in unfamiliar
+        <span class="noun a-bob" title="months"><svg width="58" height="58" viewBox="0 0 58 58"><rect x="6" y="10" width="46" height="42" rx="4" fill="none" stroke="#8A7A6A" stroke-width="2"/><rect x="6" y="10" width="46" height="14" rx="4" fill="#5A4A3A" opacity="0.7"/><line x1="6" y1="24" x2="52" y2="24" stroke="#8A7A6A" stroke-width="1.5"/><circle cx="17" cy="35" r="3" fill="#7EB87A" opacity="0.8"/><circle cx="29" cy="35" r="3" fill="#7EB87A" opacity="0.6"/><circle cx="41" cy="35" r="3" fill="#7EB87A" opacity="0.4"/><circle cx="17" cy="45" r="3" fill="#C8A060" opacity="0.7"/><circle cx="29" cy="45" r="3" fill="#C8A060" opacity="0.5"/><line x1="18" y1="5" x2="18" y2="15" stroke="#8A7A6A" stroke-width="2" stroke-linecap="round"/><line x1="40" y1="5" x2="40" y2="15" stroke="#8A7A6A" stroke-width="2" stroke-linecap="round"/></svg><span class="noun-label">months</span></span>,
+      </div>
+      <div class="poem-line">
+        crossing confused
+        <span class="noun a-spin-ccw" title="seasons"><svg width="58" height="58" viewBox="0 0 58 58"><circle cx="29" cy="29" r="22" fill="none" stroke="#5a5248" stroke-width="1.5"/><ellipse cx="29" cy="14" rx="9" ry="7" fill="#7EB87A" opacity="0.8"/><ellipse cx="44" cy="29" rx="7" ry="9" fill="#E8941A" opacity="0.7"/><ellipse cx="29" cy="44" rx="9" ry="7" fill="#C8A060" opacity="0.7"/><ellipse cx="14" cy="29" rx="7" ry="9" fill="#5BAFD6" opacity="0.7"/><circle cx="29" cy="29" r="4" fill="#3a3530"/></svg><span class="noun-label">seasons</span></span>
+        and restless
+        <span class="noun a-drift" title="winds"><svg width="62" height="46" viewBox="0 0 62 46"><path d="M4 16 Q22 8 38 16 Q46 20 52 14 Q56 10 54 6" stroke="#A8C0CC" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M2 26 Q20 18 36 26 Q46 30 54 22" stroke="#BCCEDD" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M6 36 Q24 28 40 36 Q50 40 58 34" stroke="#D0DEE8" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg><span class="noun-label">winds</span></span>,
+      </div>
+      <div class="poem-line">
+        while shifting
+        <span class="noun a-float" title="clouds"><svg width="70" height="46" viewBox="0 0 70 46"><ellipse cx="35" cy="32" rx="28" ry="12" fill="#8A9AAA" opacity="0.55"/><ellipse cx="26" cy="30" rx="16" ry="12" fill="#9AAABA" opacity="0.7"/><ellipse cx="44" cy="28" rx="14" ry="10" fill="#AABACA" opacity="0.7"/><ellipse cx="35" cy="24" rx="14" ry="11" fill="#BACAD8" opacity="0.8"/><ellipse cx="29" cy="20" rx="9" ry="8" fill="#CADAE6"/><ellipse cx="42" cy="22" rx="8" ry="7" fill="#C4D4E2"/></svg><span class="noun-label">clouds</span></span>
+        and warming
+        <span class="noun a-shimmer" title="skies"><svg width="66" height="50" viewBox="0 0 66 50"><ellipse cx="33" cy="32" rx="28" ry="14" fill="#B4D6EE" opacity="0.65"/><ellipse cx="24" cy="28" rx="18" ry="13" fill="#C8E4F6" opacity="0.8"/><ellipse cx="44" cy="26" rx="15" ry="11" fill="#D4ECFA" opacity="0.8"/><ellipse cx="33" cy="22" rx="14" ry="11" fill="#E8F5FC"/><ellipse cx="28" cy="17" rx="9" ry="8" fill="#FFF8E8" opacity="0.9"/><ellipse cx="40" cy="20" rx="8" ry="7" fill="#FFF0D0" opacity="0.8"/></svg><span class="noun-label">skies</span></span>
+      </div>
+      <div class="poem-line">
+        reshape the rhythm of the
+        <span class="noun a-pulse" title="earth"><svg width="56" height="56" viewBox="0 0 56 56"><circle cx="28" cy="28" r="22" fill="#2A6AB8"/><ellipse cx="20" cy="20" rx="10" ry="8" fill="#3A8E30" transform="rotate(-22 20 20)"/><ellipse cx="34" cy="30" rx="12" ry="9" fill="#4AA840" transform="rotate(14 34 30)"/><ellipse cx="15" cy="33" rx="6" ry="5" fill="#3A8E30" transform="rotate(-28 15 33)"/><ellipse cx="38" cy="18" rx="5" ry="4" fill="#4AA840"/><circle cx="28" cy="28" r="22" fill="none" stroke="#1A52A0" stroke-width="1.5"/></svg><span class="noun-label">earth</span></span>.
+      </div>
+    </div>
+
+    <div class="divider"><span class="divider-symbol">✦</span></div>
+
+    <div class="stanza">
+      <div class="poem-line">
+        Now the
+        <span class="noun a-bob" title="fields"><svg width="68" height="50" viewBox="0 0 68 50"><rect x="2" y="32" width="64" height="16" rx="3" fill="#8BC34A" opacity="0.3"/><line x1="8" y1="32" x2="4" y2="14" stroke="#5A8830" stroke-width="2.2" stroke-linecap="round"/><line x1="16" y1="32" x2="16" y2="10" stroke="#6EA038" stroke-width="2.2" stroke-linecap="round"/><line x1="24" y1="32" x2="22" y2="12" stroke="#5A8830" stroke-width="2.2" stroke-linecap="round"/><line x1="32" y1="32" x2="32" y2="8" stroke="#6EA038" stroke-width="2.5" stroke-linecap="round"/><line x1="40" y1="32" x2="38" y2="12" stroke="#5A8830" stroke-width="2.2" stroke-linecap="round"/><line x1="48" y1="32" x2="48" y2="10" stroke="#6EA038" stroke-width="2.2" stroke-linecap="round"/><ellipse cx="16" cy="9" rx="3.5" ry="2.5" fill="#AADD60"/><ellipse cx="32" cy="7" rx="4.5" ry="3" fill="#AADD60"/><ellipse cx="48" cy="9" rx="3.5" ry="2.5" fill="#AADD60"/></svg><span class="noun-label">fields</span></span>
+        wait beneath uncertain
+        <span class="noun a-shimmer" title="sunlight"><svg width="60" height="60" viewBox="0 0 60 60"><circle cx="30" cy="30" r="10" fill="#FFD060" opacity="0.8"/><line x1="30" y1="6" x2="30" y2="16" stroke="#FFD060" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/><line x1="30" y1="44" x2="30" y2="54" stroke="#FFD060" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/><line x1="6" y1="30" x2="16" y2="30" stroke="#FFD060" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/><line x1="44" y1="30" x2="54" y2="30" stroke="#FFD060" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/><line x1="13" y1="13" x2="20" y2="20" stroke="#FFD060" stroke-width="2" stroke-linecap="round" opacity="0.5"/><line x1="40" y1="40" x2="47" y2="47" stroke="#FFD060" stroke-width="2" stroke-linecap="round" opacity="0.5"/><line x1="47" y1="13" x2="40" y2="20" stroke="#FFD060" stroke-width="2" stroke-linecap="round" opacity="0.5"/><line x1="20" y1="40" x2="13" y2="47" stroke="#FFD060" stroke-width="2" stroke-linecap="round" opacity="0.5"/></svg><span class="noun-label">sunlight</span></span>,
+      </div>
+      <div class="poem-line">
+        the
+        <span class="noun a-wave" title="rivers"><svg width="72" height="40" viewBox="0 0 72 40"><path d="M4 20 Q14 10 24 20 Q34 30 44 20 Q54 10 62 20 Q66 26 70 20" stroke="#2A8BAA" stroke-width="3.5" fill="none" stroke-linecap="round"/><path d="M2 28 Q12 18 22 28 Q32 38 42 28 Q52 18 62 28 Q66 32 70 28" stroke="#4AAFC8" stroke-width="2.2" fill="none" stroke-linecap="round" opacity="0.6"/></svg><span class="noun-label">rivers</span></span>
+        rise too early, the
+        <span class="noun a-spin" title="heat"><svg width="52" height="52" viewBox="0 0 52 52"><circle cx="26" cy="26" r="14" fill="#E8501A" opacity="0.7"/><circle cx="26" cy="26" r="9" fill="#FF8040" opacity="0.8"/><circle cx="26" cy="26" r="5" fill="#FFD060"/><path d="M26 5 Q30 10 26 15 Q22 10 26 5" fill="#E8501A" opacity="0.5"/><path d="M26 37 Q30 42 26 47 Q22 42 26 37" fill="#E8501A" opacity="0.5"/><path d="M5 26 Q10 22 15 26 Q10 30 5 26" fill="#E8501A" opacity="0.5"/><path d="M37 26 Q42 22 47 26 Q42 30 37 26" fill="#E8501A" opacity="0.5"/></svg><span class="noun-label">heat</span></span>
+        lingers too long,
+      </div>
+      <div class="poem-line">
+        and every falling
+        <span class="noun a-drip-h" title="storm"><svg width="60" height="60" viewBox="0 0 60 60"><ellipse cx="30" cy="22" rx="22" ry="14" fill="#4A5A6A" opacity="0.75"/><ellipse cx="22" cy="20" rx="14" ry="10" fill="#5A6A7A" opacity="0.8"/><ellipse cx="38" cy="18" rx="12" ry="9" fill="#6A7A8A" opacity="0.7"/><line x1="20" y1="34" x2="16" y2="48" stroke="#5BAFD6" stroke-width="2.2" stroke-linecap="round" opacity="0.8"/><line x1="28" y1="36" x2="24" y2="52" stroke="#4A9BC2" stroke-width="2.2" stroke-linecap="round" opacity="0.8"/><line x1="36" y1="34" x2="32" y2="50" stroke="#5BAFD6" stroke-width="2.2" stroke-linecap="round" opacity="0.8"/><line x1="44" y1="36" x2="40" y2="52" stroke="#4A9BC2" stroke-width="2.2" stroke-linecap="round" opacity="0.7"/><path d="M34 24 L28 36 L32 36 L25 50" stroke="#FFD060" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.8"/></svg><span class="noun-label">storm</span></span>
+        carries the quiet
+        <span class="noun a-shimmer" title="warning"><svg width="54" height="54" viewBox="0 0 54 54"><polygon points="27,6 50,46 4,46" fill="none" stroke="#E8941A" stroke-width="2.5"/><polygon points="27,12 46,44 8,44" fill="#E8941A" opacity="0.15"/><line x1="27" y1="20" x2="27" y2="34" stroke="#E8941A" stroke-width="3" stroke-linecap="round"/><circle cx="27" cy="40" r="2.5" fill="#E8941A"/></svg><span class="noun-label">warning</span></span>
+      </div>
+      <div class="poem-line">
+        of a world nature no longer fully remembers.
+      </div>
+    </div>
+    <footer-poem>hover each image to reveal its name</footer-poem>
+  </div>
+
+  <!-- POEM 3: Fading Tide -->
+  <div class="poem-page" id="poem-tide">
+    <button class="back-btn" onclick="goBack()">Back</button>
+    <div class="poem-header">
+      <div class="poem-header-rule"></div>
+      <h1>Fading Tide</h1>
+      <p>Broken Earth · III</p>
+    </div>
+    <div class="stanza">
+      <div class="poem-line">
+        The
+        <span class="noun a-undulate" title="sea"><svg width="72" height="50" viewBox="0 0 72 50"><path d="M2 30 Q12 18 22 30 Q32 42 42 30 Q52 18 62 30 Q66 36 70 30" stroke="#1A7AAA" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M2 38 Q12 26 22 38 Q32 50 42 38 Q52 26 62 38 Q66 44 70 38" stroke="#2A9ACC" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.65"/><path d="M4 22 Q14 12 24 22 Q34 32 44 22 Q54 12 64 22" stroke="#50B8E0" stroke-width="1.8" fill="none" stroke-linecap="round" opacity="0.45"/><ellipse cx="18" cy="16" rx="3" ry="2" fill="#80D0F0" opacity="0.4"/><ellipse cx="50" cy="36" rx="3" ry="2" fill="#80D0F0" opacity="0.35"/></svg><span class="noun-label">sea</span></span>
+        once sang through silver
+        <span class="noun a-wave" title="waves"><svg width="68" height="38" viewBox="0 0 68 38"><path d="M2 20 Q12 8 22 20 Q32 32 42 20 Q52 8 62 20 Q65 26 68 20" stroke="#60C0E0" stroke-width="3.5" fill="none" stroke-linecap="round"/><path d="M2 28 Q12 16 22 28 Q32 40 42 28 Q52 16 62 28" stroke="#80D0F0" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.5"/><path d="M2 12 Q12 2 22 12 Q32 22 42 12 Q52 2 62 12" stroke="#A0E0FF" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.35"/></svg><span class="noun-label">waves</span></span>,
+      </div>
+      <div class="poem-line">
+        touching soft
+        <span class="noun a-drift" title="sand"><svg width="68" height="36" viewBox="0 0 68 36"><ellipse cx="34" cy="28" rx="30" ry="7" fill="#D4A84A" opacity="0.55"/><ellipse cx="34" cy="24" rx="28" ry="6" fill="#E0BA60" opacity="0.7"/><ellipse cx="20" cy="20" rx="10" ry="3" fill="#EAC870" opacity="0.6"/><ellipse cx="48" cy="18" rx="12" ry="3" fill="#EAC870" opacity="0.55"/><circle cx="15" cy="22" r="1.5" fill="#C89040" opacity="0.5"/><circle cx="38" cy="18" r="1" fill="#C89040" opacity="0.4"/><circle cx="55" cy="22" r="1.5" fill="#C89040" opacity="0.5"/></svg><span class="noun-label">sand</span></span>
+        along the quiet
+        <span class="noun a-float" title="beach"><svg width="70" height="50" viewBox="0 0 70 50"><ellipse cx="35" cy="38" rx="32" ry="10" fill="#D4A84A" opacity="0.5"/><ellipse cx="35" cy="32" rx="30" ry="8" fill="#E0BA60" opacity="0.65"/><path d="M4 32 Q18 22 28 28 Q38 22 50 28 Q58 24 66 32" fill="#C8D8E8" opacity="0.5"/><path d="M2 36 Q16 26 26 32 Q36 24 48 30 Q58 26 68 36" stroke="#5BAFD6" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.55"/></svg><span class="noun-label">beach</span></span>,
+      </div>
+      <div class="poem-line">
+        while bright
+        <span class="noun a-sway-g" title="corals"><svg width="64" height="66" viewBox="0 0 64 66"><rect x="30" y="44" width="4" height="20" rx="2" fill="#8A4A3A"/><path d="M32 44 C28 36 20 34 16 28" stroke="#E8604A" stroke-width="3.5" fill="none" stroke-linecap="round"/><path d="M32 40 C38 32 46 30 48 22" stroke="#F07858" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M32 44 C24 42 18 36 14 30" stroke="#D05040" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M32 40 C40 38 46 32 50 26" stroke="#E86858" stroke-width="2.5" fill="none" stroke-linecap="round"/><circle cx="16" cy="28" r="4" fill="#FF8870"/><circle cx="48" cy="22" r="4" fill="#FF8060"/><circle cx="14" cy="30" r="3" fill="#FF9878"/><circle cx="50" cy="26" r="3" fill="#FF7860"/></svg><span class="noun-label">corals</span></span>
+        swayed beneath the clear
+        <span class="noun a-undulate" title="water"><svg width="68" height="44" viewBox="0 0 68 44"><path d="M2 22 Q12 12 22 22 Q32 32 42 22 Q52 12 62 22 Q65 28 68 22" stroke="#1A9ACC" stroke-width="3.5" fill="none" stroke-linecap="round"/><path d="M2 30 Q12 20 22 30 Q32 40 42 30 Q52 20 62 30" stroke="#40B8E0" stroke-width="2.2" fill="none" stroke-linecap="round" opacity="0.6"/><path d="M4 14 Q14 6 24 14 Q34 22 44 14 Q54 8 64 14" stroke="#80D4F4" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.4"/></svg><span class="noun-label">water</span></span>
+      </div>
+      <div class="poem-line">
+        and small
+        <span class="noun a-drift" title="fish"><svg width="62" height="46" viewBox="0 0 62 46"><ellipse cx="28" cy="23" rx="18" ry="10" fill="#4A98C8" opacity="0.8"/><path d="M46 23 L58 14 L58 32 Z" fill="#3A88B8" opacity="0.75"/><circle cx="18" cy="19" r="3" fill="#1A4860"/><circle cx="19" cy="18" r="1" fill="#FFFFFF" opacity="0.7"/><path d="M28 16 C32 14 36 15 36 18" stroke="#60B0D8" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.6"/><ellipse cx="36" cy="23" rx="4" ry="2" fill="#70C0E8" opacity="0.5"/><ellipse cx="14" cy="30" rx="10" ry="5" fill="#6AB0D8" opacity="0.5"/><path d="M24" y1="30" L18 36 L30 36 Z" fill="#3A88B8" opacity="0.5"/><path d="M19 35 L14 42 L24 42 Z" fill="#3A88B8" opacity="0.6"/></svg><span class="noun-label">fish</span></span>
+        danced beside the rising tide.
+      </div>
+    </div>
+
+    <div class="divider"><span class="divider-symbol">✦</span></div>
+
+    <div class="stanza">
+      <div class="poem-line">
+        Now broken
+        <span class="noun a-bob" title="bottles"><svg width="44" height="68" viewBox="0 0 44 68"><rect x="15" y="28" width="14" height="34" rx="4" fill="#5A8A60" opacity="0.6"/><rect x="17" y="18" width="10" height="14" rx="2" fill="#4A7A50" opacity="0.55"/><rect x="19" y="14" width="6" height="8" rx="2" fill="#3A6A40" opacity="0.5"/><line x1="15" y1="36" x2="29" y2="36" stroke="#4A7A50" stroke-width="1" opacity="0.4"/><line x1="15" y1="44" x2="29" y2="44" stroke="#4A7A50" stroke-width="1" opacity="0.4"/><path d="M24 50 L34 60" stroke="#8A5A5A" stroke-width="2" stroke-linecap="round" opacity="0.7"/><path d="M20 56 L30 48" stroke="#8A5A5A" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/></svg><span class="noun-label">bottles</span></span>
+        drift across the dark
+        <span class="noun a-undulate" title="shore"><svg width="72" height="40" viewBox="0 0 72 40"><ellipse cx="36" cy="32" rx="32" ry="8" fill="#6A5A4A" opacity="0.5"/><ellipse cx="36" cy="26" rx="30" ry="7" fill="#7A6A58" opacity="0.65"/><path d="M4 26 Q18 16 32 20 Q46 14 62 20 Q66 22 70 26" stroke="#4A6A7A" stroke-width="2.2" fill="none" stroke-linecap="round" opacity="0.6"/><ellipse cx="18" cy="22" rx="6" ry="2" fill="#8A7A68" opacity="0.5"/><ellipse cx="52" cy="20" rx="8" ry="2" fill="#8A7A68" opacity="0.45"/></svg><span class="noun-label">shore</span></span>,
+      </div>
+      <div class="poem-line">
+        empty
+        <span class="noun a-float" title="shells"><svg width="58" height="52" viewBox="0 0 58 52"><path d="M29 10 C20 14 10 22 10 32 C10 42 18 48 29 48 C40 48 48 42 48 32 C48 22 38 14 29 10Z" fill="none" stroke="#C8A880" stroke-width="2"/><path d="M29 10 C29 10 29 48 29 48" stroke="#B89860" stroke-width="1.2" fill="none" opacity="0.5"/><path d="M16 18 C22 26 36 26 42 18" stroke="#C8A880" stroke-width="1.2" fill="none" opacity="0.5"/><path d="M12 28 C20 32 38 32 46 28" stroke="#C8A880" stroke-width="1.2" fill="none" opacity="0.4"/><path d="M29 10 C22 18 18 28 20 38" stroke="#D0B890" stroke-width="1" fill="none" opacity="0.45"/><path d="M29 10 C36 18 40 28 38 38" stroke="#D0B890" stroke-width="1" fill="none" opacity="0.45"/><ellipse cx="29" cy="10" rx="3" ry="2" fill="#C8A880" opacity="0.7"/></svg><span class="noun-label">shells</span></span>
+        lie beneath polluted
+        <span class="noun a-wave" title="waves"><svg width="68" height="38" viewBox="0 0 68 38"><path d="M2 20 Q12 8 22 20 Q32 32 42 20 Q52 8 62 20 Q65 26 68 20" stroke="#4A6A7A" stroke-width="3.5" fill="none" stroke-linecap="round"/><path d="M2 28 Q12 16 22 28 Q32 40 42 28 Q52 16 62 28" stroke="#5A7A8A" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.5"/></svg><span class="noun-label">waves</span></span>,
+      </div>
+      <div class="poem-line">
+        and the wounded
+        <span class="noun a-tremble" title="ocean"><svg width="72" height="58" viewBox="0 0 72 58"><path d="M2 30 Q12 18 22 30 Q32 42 42 30 Q52 18 62 30 Q66 36 70 30" stroke="#1A6A9A" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M2 40 Q12 28 22 40 Q32 52 42 40 Q52 28 62 40" stroke="#2A7AAA" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.65"/><path d="M4 20 Q14 10 24 20 Q34 30 44 20 Q54 10 64 20" stroke="#40A0CC" stroke-width="1.8" fill="none" stroke-linecap="round" opacity="0.4"/><path d="M20 36 L28 22 L34 30 L40 18 L48 32" stroke="#CC4428" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.6"/></svg><span class="noun-label">ocean</span></span>
+        carries growing silence
+      </div>
+      <div class="poem-line">
+        as fewer
+        <span class="noun a-drift" title="fish"><svg width="62" height="46" viewBox="0 0 62 46"><ellipse cx="28" cy="23" rx="18" ry="10" fill="#4A6878" opacity="0.7"/><path d="M46 23 L58 14 L58 32 Z" fill="#3A5868" opacity="0.65"/><circle cx="18" cy="19" r="3" fill="#1A3040"/><circle cx="19" cy="18" r="1" fill="#FFFFFF" opacity="0.5"/><ellipse cx="36" cy="23" rx="4" ry="2" fill="#5A7888" opacity="0.45"/></svg><span class="noun-label">fish</span></span>
+        return to the sea.
+      </div>
+    </div>
+    <footer-poem>hover each image to reveal its name</footer-poem>
+  </div>
+
+</div>
+
+<script>
+const landing = document.getElementById('landing');
+const poemView = document.getElementById('poem-view');
+
+document.querySelectorAll('.poem-link').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const which = btn.dataset.poem;
+    openPoem(which);
+  });
+});
+
+function openPoem(id) {
+  landing.classList.add('hidden');
+  setTimeout(() => {
+    landing.style.display = 'none';
+    document.querySelectorAll('.poem-page').forEach(p => p.classList.remove('active'));
+    document.getElementById('poem-' + id).classList.add('active');
+    poemView.style.display = 'block';
+    window.scrollTo(0, 0);
+    setTimeout(() => poemView.classList.add('visible'), 30);
+    resetAnimations(id);
+  }, 700);
+}
+
+function goBack() {
+  poemView.classList.remove('visible');
+  setTimeout(() => {
+    poemView.style.display = 'none';
+    landing.style.display = 'flex';
+    landing.style.opacity = '0';
+    setTimeout(() => {
+      landing.classList.remove('hidden');
+      landing.style.opacity = '';
+    }, 30);
+    window.scrollTo(0, 0);
+  }, 700);
+}
+
+function resetAnimations(id) {
+  const page = document.getElementById('poem-' + id);
+  const lines = page.querySelectorAll('.poem-line');
+  lines.forEach((line, i) => {
+    line.style.animation = 'none';
+    line.style.opacity = '0';
+    line.offsetHeight;
+    line.style.animation = '';
+    line.style.animationDelay = (0.15 + i * 0.18) + 's';
+  });
+}
+</script>
+</body>
+</html>
